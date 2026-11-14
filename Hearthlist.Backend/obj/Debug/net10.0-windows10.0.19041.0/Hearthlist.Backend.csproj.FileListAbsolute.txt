@@ -1,0 +1,15 @@
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\bin\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.deps.json
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\bin\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.dll
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\bin\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.pdb
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\obj\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.csproj.AssemblyReference.cache
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\obj\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\obj\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.AssemblyInfoInputs.cache
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\obj\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.AssemblyInfo.cs
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\obj\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.csproj.CoreCompileInputs.cache
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\obj\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.dll
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\obj\Debug\net10.0-windows10.0.19041.0\refint\Hearthlist.Backend.dll
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\obj\Debug\net10.0-windows10.0.19041.0\Hearthlist.Backend.pdb
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\obj\Debug\net10.0-windows10.0.19041.0\ref\Hearthlist.Backend.dll
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\bin\Debug\notes-validation\Hearthlist.Backend.deps.json
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\bin\Debug\notes-validation\Hearthlist.Backend.dll
+C:\Users\user\Desktop\hearthlist\Hearthlist.Backend\bin\Debug\notes-validation\Hearthlist.Backend.pdb

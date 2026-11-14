@@ -1,0 +1,37 @@
+﻿<Application x:Class="Hearthlist.Desktop.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Hearthlist.Desktop">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Hearthlist.Desktop;component/Themes/TileTheme.Violet.xaml"/>
+                <ResourceDictionary Source="/Hearthlist.Desktop;component/Themes/TileCardTemplate.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+        <!-- Shadow (Black Cat) realm palette -->
+        <Color x:Key="BackgroundColor">#0d0a14</Color>
+        <Color x:Key="SurfaceColor">#161027</Color>
+        <Color x:Key="SurfaceAltColor">#1e1636</Color>
+        <Color x:Key="PrimaryColor">#8b6fc0</Color>
+        <Color x:Key="SecondaryColor">#6a4faf</Color>
+        <Color x:Key="AccentColor">#d4a840</Color>
+        <Color x:Key="TextColor">#e8e0f0</Color>
+        <Color x:Key="TextMutedColor">#a99cc4</Color>
+        <Color x:Key="GlowColor">#9b7fd0</Color>
+        <Color x:Key="DangerColor">#e0647a</Color>
+
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
+        <SolidColorBrush x:Key="SurfaceAltBrush" Color="{StaticResource SurfaceAltColor}"/>
+        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+        <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+        <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}"/>
+        <SolidColorBrush x:Key="GlowBrush" Color="{StaticResource GlowColor}"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

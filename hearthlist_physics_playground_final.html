@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  html, body { margin:0; padding:0; overflow:hidden; background:#08090c; font-family:'Consolas','Courier New',monospace; }
+  #world { position:relative; width:1600px; height:900px; background:#08090c; overflow:hidden; }
+
+  .blob { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.5; }
+  #blob1 { width:600px; height:600px; background:radial-gradient(circle,#6e56cf 0%,transparent 70%); top:-150px; left:-100px; }
+  #blob2 { width:520px; height:520px; background:radial-gradient(circle,#1f8fff 0%,transparent 70%); bottom:-150px; right:-100px; }
+
+  #boundary {
+    position:absolute; border:2px dashed rgba(255,255,255,0.22); border-radius:20px;
+  }
+  .handle {
+    position:absolute; width:14px; height:14px; background:rgba(255,255,255,0.35);
+    border:1px solid rgba(255,255,255,0.6); border-radius:50%; cursor:pointer;
+  }
+  .handle:hover { background:rgba(255,255,255,0.6); }
+
+  .tile {
+    position:absolute;
+    background: var(--tile-bg, rgba(20,22,28,0.55));
+    backdrop-filter:blur(20px) saturate(140%);
+    -webkit-backdrop-filter:blur(20px) saturate(140%);
+    border:1px solid var(--tile-border, rgba(255,255,255,0.09));
+    border-radius:16px;
+    box-shadow:0 20px 55px rgba(0,0,0,0.5);
+    color: var(--tile-text, #d7dde4);
+    padding:14px 16px;
+    font-size:12.5px;
+    line-height:1.7;
+    cursor:grab;
+    user-select:none;
+    box-sizing:border-box;
+    transition: box-shadow 0.25s, filter 0.3s, background 0.4s, border-color 0.4s;
+  }
+  .tile:active { cursor:grabbing; }
+  .tile .title { color:#8b949e; font-size:11px; margin-bottom:6px; letter-spacing:0.3px; }
+  .tile .accent { color: var(--tile-accent, #58a6ff); }
+  .tile .green-line { color:#3fd68f; }
+  .tile.grabbed { box-shadow:0 30px 70px rgba(0,0,0,0.65); z-index:50; }
+  .tile.consumed { filter: hue-rotate(70deg) saturate(2.2) brightness(1.15); border-color: rgba(63,214,143,0.6); }
+
+  #controls {
+    position:absolute; top:16px; left:16px; z-index:100;
+    display:flex; gap:14px; align-items:center; flex-wrap:wrap; max-width:900px;
+    background:rgba(20,22,28,0.65); backdrop-filter:blur(10px);
+    padding:9px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);
+  }
+  #controls label { color:#8b949e; font-size:11px; }
+  #controls button {
+    background:rgba(63,214,143,0.15); color:#3fd68f; border:1px solid rgba(63,214,143,0.4);
+    padding:5px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-family:inherit;
+  }
+  #controls button:hover { background:rgba(63,214,143,0.28); }
+  .swatch {
+    width:20px; height:20px; border-radius:50%; cursor:pointer; border:2px solid rgba(255,255,255,0.2);
+  }
+  .swatch.active { border-color:#fff; }
+
+  .wave-ring {
+    position:absolute; border-radius:50%;
+    border:3px solid rgba(63,214,143,0.55);
+    pointer-events:none;
+  }
+
+  .task-check {
+    cursor:pointer; color:#5a6472; display:inline-block; width:16px;
+  }
+  .task-check.done { color:#3fd68f; text-decoration:none; }
+  .task-line { display:block; margin:3px 0; }
+  .task-line.done-text { text-decoration:line-through; color:#5a6472; }
+
+  .praise-popup {
+    position:absolute;
+    background:rgba(63,214,143,0.16);
+    border:1px solid rgba(63,214,143,0.4);
+    color:#3fd68f;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
+    pointer-events:none;
+    animation: popupFloat 1.8s ease-out forwards;
+    white-space:nowrap;
+  }
+  @keyframes popupFloat {
+    0% { opacity:0; transform:translateY(0) scale(0.9); }
+    15% { opacity:1; transform:translateY(-8px) scale(1); }
+    75% { opacity:1; transform:translateY(-30px) scale(1); }
+    100% { opacity:0; transform:translateY(-42px) scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div id="world">
+  <div class="blob" id="blob1"></div>
+  <div class="blob" id="blob2"></div>
+  <div id="boundary"></div>
+
+  <div id="controls">
+    <button id="addTileBtn">+ Add tile</button>
+    <label>Theme</label>
+    <div class="swatch active" data-theme="slate" style="background:#141a20;"></div>
+    <div class="swatch" data-theme="violet" style="background:#241a3d;"></div>
+    <div class="swatch" data-theme="teal" style="background:#0f2a26;"></div>
+    <div class="swatch" data-theme="amber" style="background:#2a2013;"></div>
+  </div>
+</div>
+
+<script>
+const world = document.getElementById('world');
+const boundaryEl = document.getElementById('boundary');
+const waveBtn = document.getElementById('waveBtn');
+
+const WORLD_W = 1600, WORLD_H = 900;
+const CORNER_R = 16;
+const MAX_SPEED = 3.2;
+const DAMPING = 0.997;
+
+let bounds = { left: 60, top: 60, right: WORLD_W - 60, bottom: WORLD_H - 60 };
+
+function updateBoundaryVisual() {
+  boundaryEl.style.left = bounds.left + 'px';
+  boundaryEl.style.top = bounds.top + 'px';
+  boundaryEl.style.width = (bounds.right - bounds.left) + 'px';
+  boundaryEl.style.height = (bounds.bottom - bounds.top) + 'px';
+  layoutHandles();
+}
+
+const handleDefs = [
+  { key:'nw', get:()=>({x:bounds.left, y:bounds.top}), set:(x,y)=>{bounds.left=x; bounds.top=y;} },
+  { key:'ne', get:()=>({x:bounds.right, y:bounds.top}), set:(x,y)=>{bounds.right=x; bounds.top=y;} },
+  { key:'sw', get:()=>({x:bounds.left, y:bounds.bottom}), set:(x,y)=>{bounds.left=x; bounds.bottom=y;} },
+  { key:'se', get:()=>({x:bounds.right, y:bounds.bottom}), set:(x,y)=>{bounds.right=x; bounds.bottom=y;} },
+];
+const handleEls = handleDefs.map(def => {
+  const el = document.createElement('div');
+  el.className = 'handle';
+  world.appendChild(el);
+  let dragging = false;
+  el.addEventListener('pointerdown', e => { dragging = true; el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const rect = world.getBoundingClientRect();
+    let x = Math.max(0, Math.min(WORLD_W, e.clientX - rect.left));
+    let y = Math.max(0, Math.min(WORLD_H, e.clientY - rect.top));
+    def.set(x, y);
+    if (bounds.right - bounds.left < 200) return;
+    if (bounds.bottom - bounds.top < 150) return;
+    updateBoundaryVisual();
+  });
+  el.addEventListener('pointerup', e => { dragging = false; });
+  return el;
+});
+function layoutHandles() {
+  handleDefs.forEach((def, i) => {
+    const p = def.get();
+    handleEls[i].style.left = (p.x - 7) + 'px';
+    handleEls[i].style.top = (p.y - 7) + 'px';
+  });
+}
+updateBoundaryVisual();
+
+const themes = {
+  slate: { bg:'rgba(20,22,28,0.55)', border:'rgba(255,255,255,0.09)', text:'#d7dde4', accent:'#58a6ff' },
+  violet: { bg:'rgba(36,26,61,0.55)', border:'rgba(180,140,255,0.18)', text:'#e7defc', accent:'#b48cff' },
+  teal: { bg:'rgba(15,42,38,0.55)', border:'rgba(90,220,190,0.18)', text:'#d7f5ee', accent:'#3fd6b8' },
+  amber: { bg:'rgba(42,32,19,0.55)', border:'rgba(255,190,110,0.18)', text:'#f5e9d7', accent:'#ffb86b' },
+};
+function applyTheme(name) {
+  const t = themes[name];
+  document.documentElement.style.setProperty('--tile-bg', t.bg);
+  document.documentElement.style.setProperty('--tile-border', t.border);
+  document.documentElement.style.setProperty('--tile-text', t.text);
+  document.documentElement.style.setProperty('--tile-accent', t.accent);
+  document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.theme === name));
+}
+document.querySelectorAll('.swatch').forEach(s => s.addEventListener('click', () => applyTheme(s.dataset.theme)));
+applyTheme('slate');
+
+function taskLine(text, done) {
+  return `<span class="task-line"><span class="task-check${done?' done':''}" data-task>${done?'[x]':'[ ]'}</span> <span${done?' class="done-text"':''}>${text}</span></span>`;
+}
+
+const tileData = [
+  { w:280, h:170, html:'<div class="title">hearthlist — dev@localhost</div>// today\'s build queue<br>' +
+      taskLine('fix_null_ref()', false) +
+      taskLine('implement Sleepy()', false) +
+      taskLine('wire lazy-load', true) },
+  { w:170, h:110, html:'<div class="title">stats.json</div>commits_today <span class="accent">7</span><br>tasks_done <span class="accent">2/4</span><br>build <span class="green-line">passing</span>' },
+  { w:160, h:90,  html:'<div class="title">streak</div>🔥 <span class="accent">6 day streak</span><br><span style="color:#7c8695">// keep going</span>' },
+  { w:150, h:90,  html:'<div class="title">clock</div><span style="font-size:22px;font-weight:bold;">10:42</span><br><span style="color:#6e7681">Fri, Mar 20</span>' },
+];
+
+class Tile {
+  constructor(data, x, y) {
+    this.w = data.w; this.h = data.h;
+    this.x = x; this.y = y;
+    this.vx = (Math.random()-0.5) * 1.0;
+    this.vy = (Math.random()-0.5) * 1.0;
+    this.mass = this.w * this.h;
+    this.el = document.createElement('div');
+    this.el.className = 'tile';
+    this.el.style.width = this.w + 'px';
+    this.el.style.minHeight = this.h + 'px';
+    this.el.innerHTML = data.html;
+    world.appendChild(this.el);
+    this.dragging = false;
+    this.render();
+    this.attachDrag();
+  }
+  render() {
+    this.el.style.left = (this.x - this.w/2) + 'px';
+    this.el.style.top = (this.y - this.h/2) + 'px';
+  }
+  attachDrag() {
+    let history = [];
+    this.el.addEventListener('pointerdown', (e) => {
+      if (e.target !== this.el && e.target.closest('.tile') !== this.el) return;
+      this.dragging = true;
+      this.el.classList.add('grabbed');
+      this.el.setPointerCapture(e.pointerId);
+      history = [];
+    });
+    this.el.addEventListener('pointermove', (e) => {
+      if (!this.dragging) return;
+      const rect = world.getBoundingClientRect();
+      this.x = e.clientX - rect.left;
+      this.y = e.clientY - rect.top;
+      history.push({x:e.clientX, y:e.clientY, t:performance.now()});
+      if (history.length > 5) history.shift();
+      this.render();
+    });
+    this.el.addEventListener('pointerup', (e) => {
+      this.dragging = false;
+      this.el.classList.remove('grabbed');
+      if (history.length >= 2) {
+        const a = history[0], b = history[history.length-1];
+        const dt = Math.max(b.t - a.t, 1);
+        this.vx = clampSpeed((b.x - a.x) / dt * 14);
+        this.vy = clampSpeed((b.y - a.y) / dt * 14);
+      } else {
+        this.vx = 0; this.vy = 0;
+      }
+    });
+  }
+}
+
+function clampSpeed(v) {
+  return Math.max(-MAX_SPEED, Math.min(MAX_SPEED, v));
+}
+
+const tiles = [];
+tiles.push(new Tile(tileData[0], 500, 400));
+tiles.push(new Tile(tileData[1], 1000, 250));
+tiles.push(new Tile(tileData[2], 350, 650));
+tiles.push(new Tile(tileData[3], 1200, 600));
+
+function wallCollide(t) {
+  const halfW = t.w/2, halfH = t.h/2;
+  const left = bounds.left + halfW, right = bounds.right - halfW;
+  const top = bounds.top + halfH, bottom = bounds.bottom - halfH;
+  if (t.x < left) { t.x = left; t.vx = Math.abs(t.vx); }
+  if (t.x > right) { t.x = right; t.vx = -Math.abs(t.vx); }
+  if (t.y < top) { t.y = top; t.vy = Math.abs(t.vy); }
+  if (t.y > bottom) { t.y = bottom; t.vy = -Math.abs(t.vy); }
+}
+
+// true rectangle-edge collision (rounded corners treated as small circular caps
+// so the collision boundary matches the visible rounded box, not a loose circle)
+function tileCollide(a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const flatHalfW = a.w/2 + b.w/2 - CORNER_R;
+  const flatHalfH = a.h/2 + b.h/2 - CORNER_R;
+
+  const overlapX = flatHalfW - Math.abs(dx);
+  const overlapY = flatHalfH - Math.abs(dy);
+
+  if (overlapX > 0 && overlapY > 0) {
+    // flat-edge collision zone
+    let nx, ny, overlap;
+    if (overlapX < overlapY) {
+      nx = dx > 0 ? 1 : -1; ny = 0; overlap = overlapX;
+    } else {
+      nx = 0; ny = dy > 0 ? 1 : -1; overlap = overlapY;
+    }
+    resolve(a, b, nx, ny, overlap);
+    return;
+  }
+
+  // corner zone: check circular caps at each tile's nearest rounded corner
+  const cornerDist = Math.hypot(Math.max(Math.abs(dx) - (a.w/2 + b.w/2 - 2*CORNER_R), 0),
+                                 Math.max(Math.abs(dy) - (a.h/2 + b.h/2 - 2*CORNER_R), 0));
+  if (cornerDist < CORNER_R*2 && Math.abs(dx) > flatHalfW - CORNER_R && Math.abs(dy) > flatHalfH - CORNER_R) {
+    const dist = Math.hypot(dx, dy) || 0.001;
+    const nx = dx/dist, ny = dy/dist;
+    const overlap = CORNER_R*2 - cornerDist;
+    if (overlap > 0) resolve(a, b, nx, ny, overlap);
+  }
+}
+
+function resolve(a, b, nx, ny, overlap) {
+  const push = overlap / 2;
+  a.x -= nx*push; a.y -= ny*push;
+  b.x += nx*push; b.y += ny*push;
+
+  const rvx = b.vx - a.vx, rvy = b.vy - a.vy;
+  const velAlongNormal = rvx*nx + rvy*ny;
+  if (velAlongNormal > 0) return;
+  const restitution = 0.92;
+  const impulse = -(1+restitution) * velAlongNormal / (1/a.mass + 1/b.mass);
+  const ix = impulse * nx, iy = impulse * ny;
+  a.vx = clampSpeed(a.vx - ix/a.mass); a.vy = clampSpeed(a.vy - iy/a.mass);
+  b.vx = clampSpeed(b.vx + ix/b.mass); b.vy = clampSpeed(b.vy + iy/b.mass);
+}
+
+let waves = [];
+
+const praiseLines = [
+  "you really did it", "look at you go", "was that good or what",
+  "one less thing, nicely done", "that felt satisfying, right"
+];
+
+function spawnWave(x, y) {
+  waves.push({ x, y, r: 0, startTime: performance.now() });
+}
+
+function spawnPraise(x, y) {
+  const el = document.createElement('div');
+  el.className = 'praise-popup';
+  el.textContent = praiseLines[Math.floor(Math.random()*praiseLines.length)];
+  el.style.left = (x - 60) + 'px';
+  el.style.top = (y - 20) + 'px';
+  world.appendChild(el);
+  setTimeout(() => el.remove(), 1800);
+}
+
+function wireTaskChecks(tile) {
+  tile.el.querySelectorAll('[data-task]').forEach(box => {
+    box.addEventListener('pointerdown', (e) => e.stopPropagation());
+    box.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const wasDone = box.classList.contains('done');
+      if (wasDone) return; // only fire on completing, not un-completing
+      box.classList.add('done');
+      box.textContent = '[x]';
+      const textSpan = box.nextElementSibling;
+      if (textSpan) textSpan.classList.add('done-text');
+      const rect = tile.el.getBoundingClientRect();
+      const worldRect = world.getBoundingClientRect();
+      spawnWave(rect.left - worldRect.left + rect.width/2, rect.top - worldRect.top + rect.height/2);
+      spawnPraise(rect.left - worldRect.left + rect.width/2, rect.top - worldRect.top);
+    });
+  });
+}
+tiles.forEach(wireTaskChecks);
+
+const addTileBtn = document.getElementById('addTileBtn');
+let addCount = 0;
+addTileBtn.addEventListener('click', () => {
+  addCount++;
+  const data = {
+    w:170, h:90,
+    html: `<div class="title">new_task.md</div>` + taskLine('untitled task ' + addCount, false)
+  };
+  const x = bounds.left + 100 + Math.random()*100;
+  const y = bounds.top + 100 + Math.random()*100;
+  const t = new Tile(data, x, y);
+  tiles.push(t);
+  wireTaskChecks(t);
+});
+
+function updateWaves() {
+  const now = performance.now();
+  waves = waves.filter(w => now - w.startTime < 1600);
+  document.querySelectorAll('.wave-ring').forEach(el => el.remove());
+  for (const w of waves) {
+    w.r = (now - w.startTime) * 1.0;
+    const ring = document.createElement('div');
+    ring.className = 'wave-ring';
+    ring.style.width = ring.style.height = (w.r*2) + 'px';
+    ring.style.left = (w.x - w.r) + 'px';
+    ring.style.top = (w.y - w.r) + 'px';
+    ring.style.opacity = Math.max(0, 1 - (w.r / 700));
+    world.appendChild(ring);
+
+    for (const t of tiles) {
+      const dist = Math.hypot(t.x - w.x, t.y - w.y);
+      if (Math.abs(dist - w.r) < 40 && !t.consumedRecently) {
+        t.el.classList.add('consumed');
+        t.consumedRecently = true;
+        setTimeout(() => { t.el.classList.remove('consumed'); t.consumedRecently = false; }, 2000);
+      }
+    }
+  }
+}
+
+function loop() {
+  for (const t of tiles) {
+    if (!t.dragging) {
+      t.vx *= DAMPING; t.vy *= DAMPING;
+      t.vx = clampSpeed(t.vx); t.vy = clampSpeed(t.vy);
+      t.x += t.vx; t.y += t.vy;
+      wallCollide(t);
+    }
+  }
+  for (let i=0;i<tiles.length;i++)
+    for (let j=i+1;j<tiles.length;j++)
+      if (!tiles[i].dragging && !tiles[j].dragging) tileCollide(tiles[i], tiles[j]);
+
+  for (const t of tiles) t.render();
+  updateWaves();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+
+</body>
+</html>

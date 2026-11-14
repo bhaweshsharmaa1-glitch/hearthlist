@@ -1,0 +1,102 @@
+<Window x:Class="Hearthlist.Desktop.TileSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tile settings"
+        Width="430"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="#101219">
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#171B24"/>
+            <Setter Property="Foreground" Value="#E8ECF2"/>
+            <Setter Property="BorderBrush" Value="#303744"/>
+            <Setter Property="CaretBrush" Value="#B49AFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#171B24"/>
+            <Setter Property="Foreground" Value="#E8ECF2"/>
+            <Setter Property="BorderBrush" Value="#303744"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#1B202A"/>
+            <Setter Property="Foreground" Value="#E8ECF2"/>
+            <Setter Property="BorderBrush" Value="#363D4A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#E0E4EB"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+    </Window.Resources>
+    <Grid Margin="22">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="0,0,0,18">
+            <TextBlock Text="Tile settings" FontSize="21" FontWeight="SemiBold" Foreground="#F1F3F7"/>
+            <TextBlock Text="Appearance, movement and desktop area" Margin="0,4,0,0" Foreground="#939CAB"/>
+        </StackPanel>
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/><ColumnDefinition Width="120"/></Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,10,0">
+                <TextBlock Text="Title" Foreground="#AAB2BF" Margin="0,0,0,5"/>
+                <TextBox x:Name="TitleInput" Padding="8"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                <TextBlock Text="Width" Foreground="#AAB2BF" Margin="0,0,0,5"/>
+                <TextBox x:Name="WidthInput" Padding="8"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="Height" Foreground="#AAB2BF" Margin="0,0,0,5"/>
+                <TextBox x:Name="HeightInput" Padding="8"/>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="2" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="170"/></Grid.ColumnDefinitions>
+            <CheckBox x:Name="DragEnabled" Content="Allow dragging" Foreground="#E0E4EB" VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="Tile theme" Foreground="#AAB2BF" Margin="0,0,0,5"/>
+                <ComboBox x:Name="ThemeInput" Padding="6"/>
+            </StackPanel>
+        </Grid>
+        <StackPanel Grid.Row="3" Margin="0,0,0,14">
+            <TextBlock Text="Border treatment" Foreground="#AAB2BF" Margin="0,0,0,5"/>
+            <ComboBox x:Name="BorderStyleInput" Padding="7"/>
+        </StackPanel>
+        <GroupBox Grid.Row="4" Header="Shared movement area" Foreground="#C9D0DA" BorderBrush="#343944" Padding="12" Margin="0,0,0,18">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <StackPanel Margin="0,0,10,8">
+                    <TextBlock Text="Left" Foreground="#929BA9" Margin="0,0,0,4"/><TextBox x:Name="BoundsLeft" Padding="7"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="0,0,0,8">
+                    <TextBlock Text="Top" Foreground="#929BA9" Margin="0,0,0,4"/><TextBox x:Name="BoundsTop" Padding="7"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Margin="0,0,10,0">
+                    <TextBlock Text="Right" Foreground="#929BA9" Margin="0,0,0,4"/><TextBox x:Name="BoundsRight" Padding="7"/>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1">
+                    <TextBlock Text="Bottom" Foreground="#929BA9" Margin="0,0,0,4"/><TextBox x:Name="BoundsBottom" Padding="7"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cancel" MinWidth="84" Padding="12,7" Margin="0,0,8,0" IsCancel="True"/>
+            <Button Content="Save" MinWidth="84" Padding="12,7" IsDefault="True" Click="SaveButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

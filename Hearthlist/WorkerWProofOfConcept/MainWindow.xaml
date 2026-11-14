@@ -1,0 +1,11 @@
+<Window x:Class="WorkerWProofOfConcept.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WorkerW Proof of Concept"
+        Background="#102A43"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        AllowsTransparency="False">
+</Window>

@@ -1,0 +1,7 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="TileCardBackgroundBrush" Color="#8C102434"/>
+    <SolidColorBrush x:Key="TileCardBorderBrush" Color="#3374D8F2"/>
+    <SolidColorBrush x:Key="TileTextBrush" Color="#D8F2FA"/>
+    <SolidColorBrush x:Key="TileAccentBrush" Color="#74D8F2"/>
+    <SolidColorBrush x:Key="TileAccentSoftBrush" Color="#3374D8F2"/>
+</ResourceDictionary>
